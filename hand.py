@@ -1,9 +1,12 @@
+#ライブラリーのインポート
 import cv2
 import mediapipe as mp
+
+#とりあえずやっとけ(ソリューションのオブジェクト化)
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
-# # For static images:
+# # 静止画を入力するならこっち:
 # IMAGE_FILES = []
 # with mp_hands.Hands(
 #     static_image_mode=True,
@@ -34,27 +37,33 @@ mp_hands = mp.solutions.hands
 #     cv2.imwrite(
 #         '/tmp/annotated_image' + str(idx) + '.png', cv2.flip(annotated_image, 1))
 
-# For webcam input:
+# カメラ映像を入力するならこっち:
 cap = cv2.VideoCapture(0)
 with mp_hands.Hands(
     min_detection_confidence=0.5,
-    min_tracking_confidence=0.5) as hands:
+    min_tracking_confidence=0.5) as hands: #with構文を用いてソリューションの詳細設定
+
   while cap.isOpened():
     success, image = cap.read()
     if not success:
       print("Ignoring empty camera frame.")
-      # If loading a video, use 'break' instead of 'continue'.
+      # If loading a video, use 'break' instead of 'continue'.(ビデオ入力ならBlakeしてね)
       continue
 
     # Flip the image horizontally for a later selfie-view display, and convert
     # the BGR image to RGB.
+    #色々画像に処理を加えています
     image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+
     # To improve performance, optionally mark the image as not writeable to
     # pass by reference.
+    #色々画像に処理を加えています2
     image.flags.writeable = False
     results = hands.process(image)
 
     # Draw the hand annotations on the image.
+    #アノーテーションの追加(手に出てくるあれ)
+
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     if results.multi_hand_landmarks:
@@ -62,6 +71,6 @@ with mp_hands.Hands(
         mp_drawing.draw_landmarks(
             image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
     cv2.imshow('MediaPipe Hands', image)
-    if cv2.waitKey(5) & 0xFF == 27:
+    if cv2.waitKey(5) & 0xFF == 27: #キー入力でループ脱出
       break
 cap.release()
